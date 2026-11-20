@@ -381,6 +381,10 @@ if (!authState.authenticated) {
                   <span>Admin Tools</span>
                 </button>
               </div>
+            </>
+          )}
+        </div>
+
 {/* Di sisi kanan header (tampil baik saat sudah maupun belum connect MySQL) */}
 <div className="flex items-center gap-1.5 text-xs">
   {session && (
@@ -409,11 +413,8 @@ if (!authState.authenticated) {
     </div>
   )}
 </div>
-            </>
-          )}
-        </div>
-
-        {/* Status Environment & Menu Mobile */}
+ 
+       {/* Status Environment & Menu Mobile */}
         {session && (
           <div className="flex items-center gap-1.5 text-xs">
             <span className="px-1.5 md:px-2 py-0.5 rounded uppercase text-[10px] font-bold tracking-wider bg-slate-800 border border-slate-700">

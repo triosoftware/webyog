@@ -21,6 +21,9 @@ import SchemaDesigner from './components/SchemaDesigner';
 import ExportImportModal from './components/ExportImportModal';
 import AdminToolsModal from './components/AdminToolsModal';
 import { dbApi } from './services/api';
+import { LogOut, Loader2 /* ...ikon lainnya tetap */ } from 'lucide-react';
+import LoginScreen from './components/LoginScreen';
+
 
 const createQueryTab = (index, initialSql = '', database = '') => ({
   id: crypto.randomUUID(),
@@ -269,6 +272,53 @@ export default function App() {
     development: 'border-b-2 border-emerald-500 bg-slate-900',
   };
 
+const [authState, setAuthState] = useState({
+  checking: true,
+  authenticated: false,
+  user: null,
+});
+
+useEffect(() => {
+  dbApi
+    .checkAuth()
+    .then((res) => {
+      setAuthState({
+        checking: false,
+        authenticated: Boolean(res.authenticated),
+        user: res.user || null,
+      });
+    })
+    .catch(() => {
+      setAuthState({ checking: false, authenticated: false, user: null });
+    });
+}, []);
+
+const handleLogout = async () => {
+  if (session) {
+    await handleDisconnect();
+  }
+  await dbApi.logout();
+  setAuthState({ checking: false, authenticated: false, user: null });
+};
+
+if (authState.checking) {
+  return (
+    <div className="h-dvh w-screen flex items-center justify-center bg-slate-950 text-slate-400 text-xs gap-2">
+      <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
+      <span>Memeriksa sesi autentikasi...</span>
+    </div>
+  );
+}
+
+if (!authState.authenticated) {
+  return (
+    <LoginScreen
+      onAuthenticated={(user) =>
+        setAuthState({ checking: false, authenticated: true, user })
+      }
+    />
+  );
+}
   return (
     <div className="h-dvh w-screen flex flex-col bg-slate-950 text-slate-200 overflow-hidden">
       {/* Top Toolbar */}
@@ -331,6 +381,34 @@ export default function App() {
                   <span>Admin Tools</span>
                 </button>
               </div>
+{/* Di sisi kanan header (tampil baik saat sudah maupun belum connect MySQL) */}
+<div className="flex items-center gap-1.5 text-xs">
+  {session && (
+    <>
+      <span className="px-1.5 md:px-2 py-0.5 rounded uppercase text-[10px] font-bold tracking-wider bg-slate-800 border border-slate-700">
+        {session.meta.environment.slice(0, 4)}
+        <span className="hidden sm:inline">{session.meta.environment.slice(4)}</span>
+      </span>
+      <span className="hidden lg:inline text-slate-400">MySQL {session.meta.version}</span>
+    </>
+  )}
+
+  <button
+    onClick={handleLogout}
+    title={`Logout (${authState.user})`}
+    className="flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-red-950/60 text-slate-300 hover:text-red-400 rounded border border-slate-700"
+  >
+    <LogOut className="w-3.5 h-3.5" />
+    <span className="hidden sm:inline">Logout</span>
+  </button>
+
+  {/* Menu Overflow Mobile */}
+  {session && (
+    <div className="relative md:hidden">
+      {/* ...tombol MoreVertical & dropdown Backup/Admin tetap sama... */}
+    </div>
+  )}
+</div>
             </>
           )}
         </div>

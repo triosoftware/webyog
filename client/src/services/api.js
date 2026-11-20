@@ -157,4 +157,29 @@ export const dbApi = {
       method: 'DELETE',
       body: JSON.stringify({ user, host }),
     }),
+
+  async checkAuth() {
+    const res = await fetch(`${API_BASE}/auth/me`, { credentials: 'same-origin' });
+    return res.json();
+  },
+
+  async login(username, password) {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Login gagal');
+    return data;
+  },
+
+  async logout() {
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: 'POST',
+      credentials: 'same-origin',
+    });
+  },
+
 };
